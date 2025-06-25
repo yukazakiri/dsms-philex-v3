@@ -28,7 +28,15 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     Route::post('/applications/{application}/disbursements', [ApplicationController::class, 'createDisbursement'])->name('disbursements.store');
     Route::patch('/disbursements/{disbursement}', [ApplicationController::class, 'updateDisbursement'])->name('disbursements.update');
 
-    // User management
+    // User management - specific routes first (before resource routes)
+    Route::get('/users/export', [UserController::class, 'export'])->name('users.export');
+    Route::post('/users/import', [UserController::class, 'import'])->name('users.import');
+    Route::post('/users/bulk-status', [UserController::class, 'bulkUpdateStatus'])->name('users.bulk-status');
+    Route::delete('/users/bulk-delete', [UserController::class, 'bulkDelete'])->name('users.bulk-delete');
+    Route::patch('/users/{user}/status', [UserController::class, 'updateStatus'])->name('users.update-status');
+    Route::post('/users/{user}/send-password-reset', [UserController::class, 'sendPasswordReset'])->name('users.send-password-reset');
+    Route::patch('/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
+    Route::post('/users/{user}/force-password-change', [UserController::class, 'forcePasswordChange'])->name('users.force-password-change');
     Route::resource('users', UserController::class);
 
     // Student management

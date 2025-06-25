@@ -27,7 +27,6 @@ export interface SharedData {
     quote: { message: string; author: string };
     auth: Auth;
     ziggy: Config & { location: string };
-    sidebarOpen: boolean;
     [key: string]: unknown;
 }
 
@@ -35,7 +34,15 @@ export interface User {
     id: number;
     name: string;
     email: string;
+    role: 'admin' | 'student';
     avatar?: string;
+    cover_image?: string;
+    facebook_id?: string;
+    facebook_avatar?: string;
+    facebook_profile_url?: string;
+    provider?: string;
+    provider_id?: string;
+    provider_data?: any;
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;

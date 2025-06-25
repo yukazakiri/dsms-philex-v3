@@ -10,13 +10,22 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "blaspsoft/socialiteplus": "^1.0",
         "inertiajs/inertia-laravel": "^2.0",
+        "laravel-notification-channels/webpush": "^10.2",
         "laravel/framework": "^12.0",
+        "laravel/octane": "^2.10",
+        "laravel/socialite": "^5.21",
         "laravel/tinker": "^2.10.1",
+        "pusher/pusher-php-server": "^7.2",
+        "spatie/laravel-login-link": "^1.6",
         "tightenco/ziggy": "^2.4"
     },
     "require-dev": {
+          "barryvdh/laravel-ide-helper": "^3.5",
+        "driftingly/rector-laravel": "^2.0",
         "fakerphp/faker": "^1.23",
+           "larastan/larastan": "^3.0",
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.18",
         "laravel/sail": "^1.41",
@@ -49,22 +58,26 @@
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
         ],
         "post-create-project-cmd": [
+            
             "@php artisan key:generate --ansi",
             "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
             "@php artisan migrate --graceful --ansi"
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
-            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,queue,logs,vite --kill-others"
+            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,queue,logs,vite"
         ],
         "dev:ssr": [
             "npm run build:ssr",
             "Composer\\Config::disableProcessTimeout",
-            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"php artisan pail --timeout=0\" \"php artisan inertia:start-ssr\" --names=server,queue,logs,ssr --kill-others"
+            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"php artisan pail --timeout=0\" \"php artisan inertia:start-ssr\" --names=server,queue,logs,ssr"
         ],
-        "test": [
-            "@php artisan config:clear --ansi",
-            "@php artisan test"
+        "lint": [
+            "./vendor/bin/pint --ansi",
+            "./vendor/bin/rector --ansi",
+            "./vendor/bin/pest --parallel",
+            "./vendor/bin/pest --type-coverage --ansi --memory-limit=-1 --min=100",
+            "./vendor/bin/phpstan analyse -c phpstan.neon --ansi --memory-limit=-1"
         ]
     },
     "extra": {
