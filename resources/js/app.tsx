@@ -5,8 +5,13 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 import { initializeTheme } from './hooks/use-appearance';
 
-import Pusher from 'pusher-js';
 import Echo from 'laravel-echo';
+import Pusher from 'pusher-js';
+import { configureEcho } from '@laravel/echo-react';
+
+configureEcho({
+    broadcaster: 'pusher',
+});
 
 // Initialize theme before anything else
 initializeTheme();
