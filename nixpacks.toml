@@ -11,9 +11,6 @@ cmds = [
     "/assets/extra.sh",
 ]
 
-[phases.postbuild]
-cmds = ["php /app/artisan optimize:clear", "php /app/artisan migrate --force"]
-dependsOn = ["build"]
 
 [staticAssets]
 "extra.sh" = '''
