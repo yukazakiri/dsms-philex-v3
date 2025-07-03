@@ -68,11 +68,7 @@ export default function Create() {
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Filter out deleted requirements
-    const filteredRequirements = requirements.filter(req => !req.isDeleted);
-    setData('document_requirements', filteredRequirements);
-    
+
     post(route('admin.scholarships.store'), {
       onSuccess: () => {
         // Handle success
@@ -88,8 +84,10 @@ export default function Create() {
       description: '',
       is_required: true,
     };
-    
-    setRequirements([...requirements, newRequirement]);
+
+    const updatedRequirements = [...requirements, newRequirement];
+    setRequirements(updatedRequirements);
+    setData('document_requirements', updatedRequirements);
   };
 
   // Update a document requirement
@@ -97,6 +95,7 @@ export default function Create() {
     const updatedRequirements = [...requirements];
     updatedRequirements[index] = { ...updatedRequirements[index], [field]: value };
     setRequirements(updatedRequirements);
+    setData('document_requirements', updatedRequirements);
   };
 
   // Mark a requirement for deletion
@@ -104,6 +103,7 @@ export default function Create() {
     const updatedRequirements = [...requirements];
     updatedRequirements.splice(index, 1);
     setRequirements(updatedRequirements);
+    setData('document_requirements', updatedRequirements);
   };
 
   return (
