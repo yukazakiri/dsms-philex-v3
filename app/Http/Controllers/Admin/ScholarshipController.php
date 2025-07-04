@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ScholarshipProgram;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -171,6 +172,14 @@ final class ScholarshipController extends Controller
      */
     public function update(Request $request, ScholarshipProgram $scholarship): RedirectResponse
     {
+        // Log incoming request data for debugging
+        Log::info('Scholarship Update Request Data:', [
+            'scholarship_id' => $scholarship->id,
+            'request_data' => $request->all(),
+            'has_document_requirements' => $request->has('documentRequirements'),
+            'document_requirements_count' => $request->has('documentRequirements') ? count($request->input('documentRequirements', [])) : 0
+        ]);
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
@@ -185,14 +194,121 @@ final class ScholarshipController extends Controller
             'community_service_days' => ['required', 'integer', 'min:0'],
             'active' => ['boolean'],
             'available_slots' => ['required', 'integer', 'min:0'],
-            // Document requirements update is handled separately, usually via dedicated endpoints
-            // or a more complex update logic if done here. For simplicity, not included in this update.
+            // Add validation for document requirements
+            'documentRequirements' => ['array'],
+            'documentRequirements.*.id' => ['nullable', 'integer'],
+            'documentRequirements.*.name' => ['required_with:documentRequirements', 'string', 'max:255'],
+            'documentRequirements.*.description' => ['required_with:documentRequirements', 'string'],
+            'documentRequirements.*.is_required' => ['required_with:documentRequirements', 'boolean'],
+            'documentRequirements.*.isNew' => ['nullable', 'boolean'],
+            'documentRequirements.*.isDeleted' => ['nullable', 'boolean'],
         ]);
 
-        $scholarship->update($validated);
+        Log::info('Scholarship Update Validated Data:', [
+            'scholarship_id' => $scholarship->id,
+            'validated_data' => $validated,
+            'document_requirements_validated' => $validated['documentRequirements'] ?? 'not present'
+        ]);
+
+        // Update the scholarship basic fields
+        $scholarshipData = collect($validated)->except(['documentRequirements'])->toArray();
+        $scholarship->update($scholarshipData);
+
+        // Handle document requirements update
+        if (isset($validated['documentRequirements'])) {
+            $this->updateDocumentRequirements($scholarship, $validated['documentRequirements']);
+        }
+
+        Log::info('Scholarship Update Completed:', [
+            'scholarship_id' => $scholarship->id,
+            'updated_scholarship' => $scholarship->fresh()->load('documentRequirements')->toArray()
+        ]);
 
         return Redirect::route('admin.scholarships.show', $scholarship->id)
             ->with('success', 'Scholarship program updated successfully.');
+    }
+
+    /**
+     * Update document requirements for a scholarship program.
+     */
+    private function updateDocumentRequirements(ScholarshipProgram $scholarship, array $documentRequirements): void
+    {
+        Log::info('Updating Document Requirements:', [
+            'scholarship_id' => $scholarship->id,
+            'requirements_data' => $documentRequirements
+        ]);
+
+        // Get existing requirements
+        $existingRequirements = $scholarship->documentRequirements()->get()->keyBy('id');
+        $submittedIds = collect($documentRequirements)->pluck('id')->filter()->toArray();
+        $deletedIds = collect($documentRequirements)
+            ->filter(fn($req) => ($req['isDeleted'] ?? false) === true)
+            ->pluck('id')
+            ->filter()
+            ->toArray();
+
+        Log::info('Document Requirements Analysis:', [
+            'existing_count' => $existingRequirements->count(),
+            'submitted_count' => count($documentRequirements),
+            'existing_ids' => $existingRequirements->keys()->toArray(),
+            'submitted_ids' => $submittedIds,
+            'deleted_ids' => $deletedIds
+        ]);
+
+        // First, handle deletions
+        if (!empty($deletedIds)) {
+            $scholarship->documentRequirements()->whereIn('id', $deletedIds)->delete();
+
+            Log::info('Deleted Document Requirements:', [
+                'scholarship_id' => $scholarship->id,
+                'deleted_ids' => $deletedIds
+            ]);
+        }
+
+        // Process each submitted requirement (excluding deleted ones)
+        foreach ($documentRequirements as $requirementData) {
+            $requirementId = $requirementData['id'] ?? null;
+            $isNew = $requirementData['isNew'] ?? false;
+            $isDeleted = $requirementData['isDeleted'] ?? false;
+
+            // Skip deleted requirements (already handled above)
+            if ($isDeleted) {
+                continue;
+            }
+
+            $data = [
+                'name' => $requirementData['name'],
+                'description' => $requirementData['description'],
+                'is_required' => $requirementData['is_required'],
+            ];
+
+            if ($isNew || !$requirementId || !$existingRequirements->has($requirementId)) {
+                // Create new requirement
+                $data['scholarship_program_id'] = $scholarship->id;
+                $newRequirement = $scholarship->documentRequirements()->create($data);
+
+                Log::info('Created New Document Requirement:', [
+                    'scholarship_id' => $scholarship->id,
+                    'requirement_id' => $newRequirement->id,
+                    'requirement_data' => $data
+                ]);
+            } else {
+                // Update existing requirement
+                $existingRequirement = $existingRequirements->get($requirementId);
+                $existingRequirement->update($data);
+
+                Log::info('Updated Existing Document Requirement:', [
+                    'scholarship_id' => $scholarship->id,
+                    'requirement_id' => $requirementId,
+                    'requirement_data' => $data
+                ]);
+            }
+        }
+
+        Log::info('Document Requirements Update Completed:', [
+            'scholarship_id' => $scholarship->id,
+            'final_requirements' => $scholarship->documentRequirements()->get()->toArray()
+        ]);
     }
 
     /**

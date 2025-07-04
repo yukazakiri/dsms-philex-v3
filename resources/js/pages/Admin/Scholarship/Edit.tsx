@@ -10,6 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { AlertCircle, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 interface ScholarshipEditProps {
   scholarship: ScholarshipProgram & {
@@ -70,14 +71,19 @@ export default function Edit({ scholarship }: ScholarshipEditProps) {
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Filter out deleted requirements and update the form data
-    const filteredRequirements = requirements.filter(req => !req.isDeleted);
-    setData('documentRequirements', filteredRequirements);
-    
+
+    // Send all requirements including deletion flags for proper backend processing
+    console.log('Submitting scholarship update with requirements:', requirements);
+    setData('documentRequirements', requirements as any);
+
     put(route('admin.scholarships.update', scholarship.id), {
       onSuccess: () => {
-        // Handle success
+        console.log('Scholarship updated successfully');
+        toast.success('Scholarship program updated successfully!');
+      },
+      onError: (errors) => {
+        console.error('Scholarship update failed:', errors);
+        toast.error('Failed to update scholarship. Please check the form and try again.');
       },
     });
   };
@@ -93,26 +99,35 @@ export default function Edit({ scholarship }: ScholarshipEditProps) {
       isNew: true,
       isDeleted: false,
     };
-    
+
     const updatedRequirements = [...requirements, newRequirement];
+    console.log('Adding new requirement:', newRequirement);
+    console.log('Updated requirements list:', updatedRequirements);
     setRequirements(updatedRequirements);
-    setData('documentRequirements', updatedRequirements);
+    setData('documentRequirements', updatedRequirements as any);
   };
 
   // Update a document requirement
   const updateRequirement = (index: number, field: string, value: any) => {
     const updatedRequirements = [...requirements];
+    const oldValue = (updatedRequirements[index] as any)[field];
     updatedRequirements[index] = { ...updatedRequirements[index], [field]: value };
+    console.log(`Updating requirement ${index} field '${field}' from '${oldValue}' to '${value}'`);
+    console.log('Updated requirement:', updatedRequirements[index]);
     setRequirements(updatedRequirements);
-    setData('documentRequirements', updatedRequirements);
+    setData('documentRequirements', updatedRequirements as any);
   };
 
   // Mark a requirement for deletion
   const deleteRequirement = (index: number) => {
     const updatedRequirements = [...requirements];
+    const requirementToDelete = updatedRequirements[index];
+    console.log('Marking requirement for deletion:', requirementToDelete);
     updatedRequirements[index] = { ...updatedRequirements[index], isDeleted: true };
+    console.log('Updated requirements after deletion:', updatedRequirements);
     setRequirements(updatedRequirements);
-    setData('documentRequirements', updatedRequirements.filter(req => !req.isDeleted));
+    // Send all requirements including deleted ones for proper backend processing
+    setData('documentRequirements', updatedRequirements as any);
   };
 
   return (
