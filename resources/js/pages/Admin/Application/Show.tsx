@@ -109,7 +109,7 @@ const formatDate = (dateString?: string | null, includeTime = false) => {
 const formatCurrency = (amount?: number | string | null) => {
     const num = typeof amount === 'string' ? parseFloat(amount) : amount;
     if (typeof num !== 'number' || isNaN(num)) return 'N/A';
-    return num.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+    return num.toLocaleString('en-PH', { style: 'currency', currency: 'PHP' });
 };
 
 const getStatusConfig = (

@@ -10,7 +10,7 @@ export function StatsSection() {
     },
     {
       icon: DollarSignIcon,
-      value: "$750K",
+      value: "₱37.5M",
       label: "Scholarship Funding",
       description: "Total annual scholarship budget"
     },

@@ -63,7 +63,7 @@ const formatCurrency = (amount: number | string | undefined) => {
   console.log('[formatCurrency] Received amount:', amount, '| typeof amount:', typeof amount);
   const num = typeof amount === 'string' ? parseFloat(amount) : amount;
   console.log('[formatCurrency] Parsed num:', num, '| typeof num:', typeof num);
-  
+
   const isNumANumber = typeof num === 'number';
   const isNumNaN = isNaN(num as number); // Cast to number for isNaN, as isNaN(null) is false
   console.log('[formatCurrency] isNumANumber:', isNumANumber, '| isNumNaN:', isNumNaN);
@@ -72,10 +72,10 @@ const formatCurrency = (amount: number | string | undefined) => {
     console.log('[formatCurrency] Returning N/A due to type or NaN');
     return 'N/A';
   }
-  
+
   console.log('[formatCurrency] Attempting toLocaleString on num:', num);
   try {
-    const result = (num as number).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+    const result = (num as number).toLocaleString('en-PH', { style: 'currency', currency: 'PHP' });
     console.log('[formatCurrency] toLocaleString result:', result);
     return result;
   } catch (e) {
