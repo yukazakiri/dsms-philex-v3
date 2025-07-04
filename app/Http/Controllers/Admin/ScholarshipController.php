@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -316,15 +317,98 @@ final class ScholarshipController extends Controller
      */
     public function destroy(ScholarshipProgram $scholarship): RedirectResponse
     {
-        if ($scholarship->scholarshipApplications()->exists()) {
-            return Redirect::back()->with('error', 'Cannot delete scholarship program with existing applications.');
+        try {
+            // Load all related data for proper cleanup
+            $scholarship->load([
+                'scholarshipApplications.documentUploads',
+                'scholarshipApplications.communityServiceReports',
+                'scholarshipApplications.communityServiceEntries',
+                'scholarshipApplications.disbursements',
+                'documentRequirements'
+            ]);
+
+            Log::info('Starting scholarship deletion process', [
+                'scholarship_id' => $scholarship->id,
+                'scholarship_name' => $scholarship->name,
+                'applications_count' => $scholarship->scholarshipApplications->count(),
+                'document_requirements_count' => $scholarship->documentRequirements->count()
+            ]);
+
+            // Delete all document upload files from storage
+            foreach ($scholarship->scholarshipApplications as $application) {
+                foreach ($application->documentUploads as $documentUpload) {
+                    $this->deleteDocumentFile($documentUpload->file_path);
+                }
+
+                // Delete community service report PDF files if they exist
+                foreach ($application->communityServiceReports as $report) {
+                    if ($report->pdf_report_path) {
+                        $this->deleteDocumentFile($report->pdf_report_path);
+                    }
+                }
+
+                // Delete community service entry photos if they exist
+                foreach ($application->communityServiceEntries as $entry) {
+                    if ($entry->photos) {
+                        $photos = is_string($entry->photos) ? json_decode($entry->photos, true) : $entry->photos;
+                        if (is_array($photos)) {
+                            foreach ($photos as $photoPath) {
+                                $this->deleteDocumentFile($photoPath);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // The database foreign key constraints with cascadeOnDelete() will handle
+            // the deletion of related records automatically:
+            // - scholarship_applications (cascadeOnDelete)
+            // - document_uploads (cascadeOnDelete via scholarship_applications)
+            // - community_service_reports (cascadeOnDelete via scholarship_applications)
+            // - community_service_entries (cascadeOnDelete via scholarship_applications)
+            // - disbursements (cascadeOnDelete via scholarship_applications)
+
+            // Manually delete document requirements (no cascade constraint)
+            $scholarship->documentRequirements()->delete();
+
+            // Delete the scholarship program (this will trigger cascade deletions)
+            $scholarship->delete();
+
+            Log::info('Scholarship deletion completed successfully', [
+                'scholarship_id' => $scholarship->id,
+                'scholarship_name' => $scholarship->name
+            ]);
+
+            return Redirect::route('admin.scholarships.index')
+                ->with('success', 'Scholarship program and all related data deleted successfully.');
+
+        } catch (\Exception $e) {
+            Log::error('Error deleting scholarship program', [
+                'scholarship_id' => $scholarship->id,
+                'scholarship_name' => $scholarship->name,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return Redirect::back()->with('error', 'An error occurred while deleting the scholarship program. Please try again.');
         }
+    }
 
-        // Manually delete related document requirements
-        $scholarship->documentRequirements()->delete();
-        $scholarship->delete();
-
-        return Redirect::route('admin.scholarships.index')
-            ->with('success', 'Scholarship program deleted successfully.');
+    /**
+     * Delete a file from storage if it exists.
+     */
+    private function deleteDocumentFile(string $filePath): void
+    {
+        try {
+            if (Storage::disk('public')->exists($filePath)) {
+                Storage::disk('public')->delete($filePath);
+                Log::info('Deleted file from storage', ['file_path' => $filePath]);
+            }
+        } catch (\Exception $e) {
+            Log::warning('Failed to delete file from storage', [
+                'file_path' => $filePath,
+                'error' => $e->getMessage()
+            ]);
+        }
     }
 }

@@ -185,10 +185,15 @@ export default function Show({ scholarship }: ScholarshipShowProps) {
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogTitle>Delete Scholarship Program?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete the scholarship program.
-                      You cannot delete a scholarship with existing applications.
+                      This action cannot be undone. This will permanently delete the scholarship program and ALL related data including:
+                      <br />• All applications ({scholarship.scholarshipApplications?.length || 0} applications)
+                      <br />• All document uploads and files
+                      <br />• All community service reports and entries
+                      <br />• All disbursement records
+                      <br /><br />
+                      Are you sure you want to proceed?
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
