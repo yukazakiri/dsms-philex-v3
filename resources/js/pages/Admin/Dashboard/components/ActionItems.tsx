@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link } from '@inertiajs/react';
-import { LucideIcon, FileCheck2, UsersRound, CalendarClock, DollarSign } from 'lucide-react';
+import { LucideIcon, FileCheck2, UsersRound, CalendarClock, Coins } from 'lucide-react';
 
 interface ActionItem {
     title: string;
@@ -55,7 +55,7 @@ export default function ActionItems({ stats }: ActionItemsProps) {
             value: formatCurrency(stats.totalPendingDisbursementAmount),
             description: 'Awaiting payment processing',
             href: '#', // TODO: Add correct route when available
-            icon: DollarSign,
+            icon: Coins,
             color: 'text-purple-600',
         },
     ];

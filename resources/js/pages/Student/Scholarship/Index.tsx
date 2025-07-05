@@ -11,8 +11,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CalendarIcon, FileTextIcon, ClockIcon, CheckCircleIcon, AlertCircleIcon, 
-         DollarSignIcon, SearchIcon, BookOpenIcon, AwardIcon, GraduationCapIcon, 
+import { CalendarIcon, FileTextIcon, ClockIcon, CheckCircleIcon, AlertCircleIcon,
+         Coins, SearchIcon, BookOpenIcon, AwardIcon, GraduationCapIcon,
          ChevronRightIcon, StarIcon, School2Icon, FilterIcon, UsersIcon, TimerIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -259,10 +259,14 @@ export default function Index({ scholarships, existingApplicationIds, hasProfile
                         
                         <div className="grid grid-cols-2 gap-3 text-sm">
                           <div className="flex items-start gap-1.5">
-                            <DollarSignIcon className="h-4 w-4 text-green-500 flex-shrink-0 mt-0.5" />
+                            <Coins className="h-4 w-4 text-green-500 flex-shrink-0 mt-0.5" />
                             <div>
                               <div className="text-xs text-muted-foreground">Award Amount</div>
-                              <div className="font-medium">${scholarship.per_student_budget.toLocaleString()}</div>
+                              <div className="font-medium">{new Intl.NumberFormat('en-PH', {
+                                style: 'currency',
+                                currency: 'PHP',
+                                minimumFractionDigits: 2,
+                              }).format(scholarship.per_student_budget)}</div>
                             </div>
                           </div>
                           

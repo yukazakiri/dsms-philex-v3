@@ -118,7 +118,11 @@ export default function Show({
               <div className="space-y-4">
                 <div>
                   <h3 className="font-medium text-muted-foreground">Award Amount</h3>
-                  <p className="text-lg font-semibold">${scholarship.per_student_budget.toLocaleString()}</p>
+                  <p className="text-lg font-semibold">{new Intl.NumberFormat('en-PH', {
+                    style: 'currency',
+                    currency: 'PHP',
+                    minimumFractionDigits: 2,
+                  }).format(scholarship.per_student_budget)}</p>
                 </div>
                 
                 <div>

@@ -13,17 +13,17 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { 
-    Calendar, 
-    FileText, 
-    CheckCircle2, 
-    AlertTriangle, 
-    XCircle, 
-    Upload, 
-    DollarSign, 
-    Clock, 
-    File, 
-    Check, 
+import {
+    Calendar,
+    FileText,
+    CheckCircle2,
+    AlertTriangle,
+    XCircle,
+    Upload,
+    Coins,
+    Clock,
+    File,
+    Check,
     Award,
     BookOpen,
     HelpCircle,
@@ -271,7 +271,11 @@ export default function Show({
                                     
                                     <div className="space-y-1">
                                         <p className="text-2xl font-bold">
-                                            ${scholarship.per_student_budget.toLocaleString()}
+                                            {new Intl.NumberFormat('en-PH', {
+                                                style: 'currency',
+                                                currency: 'PHP',
+                                                minimumFractionDigits: 2,
+                                            }).format(scholarship.per_student_budget)}
                                         </p>
                                         <p className="text-primary-foreground/80">Award Amount</p>
                                     </div>
@@ -356,11 +360,15 @@ export default function Show({
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div className="p-4 bg-muted/50 rounded-lg">
                                                 <div className="flex items-center gap-2 mb-2">
-                                                    <DollarSign className="h-4 w-4 text-green-600" />
+                                                    <Coins className="h-4 w-4 text-green-600" />
                                                     <span className="text-sm font-medium text-muted-foreground">Award Amount</span>
                                                 </div>
                                                 <p className="text-2xl font-bold text-green-600">
-                                                    ${scholarship.per_student_budget.toLocaleString()}
+                                                    {new Intl.NumberFormat('en-PH', {
+                                                        style: 'currency',
+                                                        currency: 'PHP',
+                                                        minimumFractionDigits: 2,
+                                                    }).format(scholarship.per_student_budget)}
                                                 </p>
                                             </div>
 

@@ -18,7 +18,7 @@ import {
   Edit,
   Trash2,
   CalendarDays,
-  DollarSign,
+  Coins,
   Users,
   ClipboardList,
   FileText,
@@ -140,8 +140,8 @@ export default function Show({ scholarship }: ScholarshipShowProps) {
 
 
   const stats = [
-    { name: 'Total Budget', value: formatCurrency(scholarship.total_budget), icon: DollarSign },
-    { name: 'Per Student Budget', value: formatCurrency(scholarship.per_student_budget), icon: DollarSign },
+    { name: 'Total Budget', value: formatCurrency(scholarship.total_budget), icon: Coins },
+    { name: 'Per Student Budget', value: formatCurrency(scholarship.per_student_budget), icon: Coins },
     { name: 'Available Slots', value: scholarship.available_slots, icon: Users },
     { name: 'Applications', value: totalApplications, icon: ClipboardList },
     { name: 'Deadline', value: formatDate(scholarship.application_deadline), icon: CalendarDays },

@@ -18,7 +18,7 @@ import {
     CheckCircle2,
     ClipboardList,
     Clock,
-    DollarSign,
+    Coins,
     ExternalLink,
     FileCheck,
     FileText,
@@ -300,8 +300,12 @@ export default function Show({ student, applications }: StudentShowProps) {
                                                                         )}
                                                                         {totalDisbursed > 0 && (
                                                                             <div className="text-muted-foreground flex items-center">
-                                                                                <DollarSign className="mr-1.5 h-4 w-4 flex-shrink-0 text-emerald-600" />
-                                                                                <span>Disbursed: ${totalDisbursed.toLocaleString()}</span>
+                                                                                <Coins className="mr-1.5 h-4 w-4 flex-shrink-0 text-emerald-600" />
+                                                                                <span>Disbursed: {new Intl.NumberFormat('en-PH', {
+                                                                                    style: 'currency',
+                                                                                    currency: 'PHP',
+                                                                                    minimumFractionDigits: 2,
+                                                                                }).format(totalDisbursed)}</span>
                                                                             </div>
                                                                         )}
                                                                     </div>
