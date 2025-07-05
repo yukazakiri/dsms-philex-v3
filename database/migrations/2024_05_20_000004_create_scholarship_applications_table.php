@@ -32,6 +32,7 @@ return new class extends Migration
                 'disbursement_processed',
                 'completed',
                 'rejected',
+                'cancelled',
             ])->default('draft');
             $table->text('admin_notes')->nullable();
             $table->timestamp('submitted_at')->nullable();

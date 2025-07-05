@@ -10,6 +10,8 @@ use App\Models\ScholarshipProgram;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -196,30 +198,78 @@ final class ScholarshipController extends Controller
             return Redirect::back()->with('error', 'Invalid document requirement.');
         }
 
-        // Check if document already exists and delete it
-        $existingUpload = $application->documentUploads()
-            ->where('document_requirement_id', $validated['document_requirement_id'])
-            ->first();
+        try {
+            DB::beginTransaction();
 
-        if ($existingUpload) {
-            Storage::delete($existingUpload->file_path);
-            $existingUpload->delete();
+            // Check if document already exists and delete it
+            $existingUpload = $application->documentUploads()
+                ->where('document_requirement_id', $validated['document_requirement_id'])
+                ->first();
+
+            if ($existingUpload) {
+                Storage::delete($existingUpload->file_path);
+                $existingUpload->delete();
+            }
+
+            // Store the new document
+            $path = $request->file('document')->store('documents/'.$application->id);
+
+            \App\Models\DocumentUpload::create([
+                'scholarship_application_id' => $application->id,
+                'document_requirement_id' => $validated['document_requirement_id'],
+                'file_path' => $path,
+                'original_filename' => $request->file('document')->getClientOriginalName(),
+                'status' => 'pending_review',
+                'uploaded_at' => now(),
+            ]);
+
+            DB::commit();
+
+            return Redirect::route('student.applications.show', $application)
+                ->with('success', 'Document uploaded successfully.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            // Clean up the uploaded file if database operation failed
+            if (isset($path)) {
+                Storage::delete($path);
+            }
+
+            Log::error('Document upload failed', [
+                'application_id' => $application->id,
+                'requirement_id' => $validated['document_requirement_id'],
+                'error' => $e->getMessage()
+            ]);
+
+            return Redirect::back()->with('error', 'Failed to upload document. Please try again.');
         }
+    }
 
-        // Store the new document
-        $path = $request->file('document')->store('documents/'.$application->id);
+    /**
+     * View/download a document for a scholarship application.
+     */
+    public function viewDocument(ScholarshipApplication $application, DocumentUpload $document)
+    {
+        $user = Auth::user();
+        $profile = $user->studentProfile;
 
-        \App\Models\DocumentUpload::query()->create([
-            'scholarship_application_id' => $application->id,
-            'document_requirement_id' => $validated['document_requirement_id'],
-            'file_path' => $path,
-            'original_filename' => $request->file('document')->getClientOriginalName(),
-            'status' => 'pending_review',
-            'uploaded_at' => now(),
+        // Authorization check - ensure the document belongs to this application and user
+        abort_if($profile->id !== $application->student_profile_id, 403);
+        abort_if($document->scholarship_application_id !== $application->id, 403);
+
+        // Check if file exists
+        abort_unless(Storage::exists($document->file_path), 404, 'File not found.');
+
+        // Get file info
+        $filePath = Storage::path($document->file_path);
+        $mimeType = Storage::mimeType($document->file_path);
+
+        // Return file response
+        return response()->file($filePath, [
+            'Content-Type' => $mimeType,
+            'Content-Disposition' => 'inline; filename="' . $document->original_filename . '"'
         ]);
-
-        return Redirect::route('student.applications.show', $application)
-            ->with('success', 'Document uploaded successfully.');
     }
 
     /**
@@ -250,6 +300,35 @@ final class ScholarshipController extends Controller
 
         return Redirect::route('student.applications.show', $application)
             ->with('success', 'Application submitted successfully. It will be reviewed by our team.');
+    }
+
+    /**
+     * Cancel a scholarship application.
+     */
+    public function cancelApplication(ScholarshipApplication $application): RedirectResponse
+    {
+        $user = Auth::user();
+        $profile = $user->studentProfile;
+
+        // Authorization check
+        abort_if($profile->id !== $application->student_profile_id, 403);
+
+        // Check if application can be cancelled
+        $cancellableStatuses = ['draft', 'submitted', 'documents_pending', 'documents_under_review'];
+
+        if (!in_array($application->status, $cancellableStatuses)) {
+            return Redirect::route('student.applications.show', $application)
+                ->with('error', 'This application cannot be cancelled at its current stage.');
+        }
+
+        // Update application status to cancelled
+        $application->update([
+            'status' => 'cancelled',
+            'reviewed_at' => now(),
+        ]);
+
+        return Redirect::route('student.applications.index')
+            ->with('success', 'Your scholarship application has been cancelled successfully.');
     }
 
     /**

@@ -25,7 +25,9 @@ Route::middleware(['auth', 'verified', 'student'])->prefix('student')->name('stu
     Route::get('/applications', [ScholarshipController::class, 'applications'])->name('applications.index');
     Route::get('/applications/{application}', [ScholarshipController::class, 'applicationShow'])->name('applications.show');
     Route::post('/applications/{application}/documents', [ScholarshipController::class, 'uploadDocument'])->name('applications.documents.upload');
+    Route::get('/applications/{application}/documents/{document}/view', [ScholarshipController::class, 'viewDocument'])->name('applications.documents.view');
     Route::post('/applications/{application}/submit', [ScholarshipController::class, 'submitApplication'])->name('applications.submit');
+    Route::post('/applications/{application}/cancel', [ScholarshipController::class, 'cancelApplication'])->name('applications.cancel');
 
     // Community service routes
     Route::get('/applications/{application}/community-service', [CommunityServiceController::class, 'create'])->name('community-service.create');

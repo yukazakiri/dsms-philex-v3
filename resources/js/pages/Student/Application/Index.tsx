@@ -177,7 +177,7 @@ export default function Index({ applications }: ApplicationIndexProps) {
     if (['completed', 'disbursement_processed', 'service_completed', 'documents_approved', 'eligibility_verified'].includes(status)) {
       return 'success';
     }
-    if (['documents_rejected', 'rejected'].includes(status)) {
+    if (['documents_rejected', 'rejected', 'cancelled'].includes(status)) {
       return 'destructive';
     }
     if (['disbursement_pending', 'service_pending', 'documents_under_review'].includes(status)) {
@@ -196,7 +196,7 @@ export default function Index({ applications }: ApplicationIndexProps) {
     if (['completed', 'disbursement_processed', 'service_completed', 'documents_approved', 'eligibility_verified'].includes(status)) {
       return <CheckCircleIcon className="h-4 w-4 text-green-500" />;
     }
-    if (['documents_rejected', 'rejected'].includes(status)) {
+    if (['documents_rejected', 'rejected', 'cancelled'].includes(status)) {
       return <XCircleIcon className="h-4 w-4 text-destructive" />;
     }
     if (['disbursement_pending', 'service_pending', 'documents_under_review'].includes(status)) {
@@ -227,6 +227,12 @@ export default function Index({ applications }: ApplicationIndexProps) {
     }
     if (['draft'].includes(status)) {
       return "Draft - continue your application";
+    }
+    if (['cancelled'].includes(status)) {
+      return "Application cancelled";
+    }
+    if (['rejected'].includes(status)) {
+      return "Application not approved";
     }
     return "Application in progress";
   };
@@ -282,8 +288,8 @@ export default function Index({ applications }: ApplicationIndexProps) {
     ['disbursement_pending', 'disbursement_processed', 'completed'].includes(app.status)
   );
   
-  const needAttentionApplications = applications.filter(app => 
-    ['documents_rejected', 'rejected'].includes(app.status)
+  const needAttentionApplications = applications.filter(app =>
+    ['documents_rejected', 'rejected', 'cancelled'].includes(app.status)
   );
 
   return (
