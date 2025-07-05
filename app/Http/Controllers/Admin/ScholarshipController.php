@@ -50,17 +50,17 @@ final class ScholarshipController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
-            'total_budget' => ['required', 'numeric', 'min:0'],
-            'per_student_budget' => ['required', 'numeric', 'min:0'],
+            'total_budget' => ['required', 'string', 'regex:/^\d+(\.\d{1,2})?$/'],
+            'per_student_budget' => ['required', 'string', 'regex:/^\d+(\.\d{1,2})?$/'],
             'school_type_eligibility' => ['required', 'in:high_school,college,both'],
-            'min_gpa' => ['required', 'numeric', 'min:0', 'max:100'], // Assuming GPA is 0-100 scale
-            'min_units' => ['nullable', 'numeric', 'min:0'],
+            'min_gpa' => ['required', 'string', 'regex:/^\d+(\.\d{1,2})?$/'],
+            'min_units' => ['nullable', 'string', 'regex:/^\d+$/'],
             'semester' => ['required', 'string', 'max:255'],
             'academic_year' => ['required', 'string', 'max:255'],
             'application_deadline' => ['required', 'date'],
-            'community_service_days' => ['required', 'integer', 'min:0'],
+            'community_service_days' => ['required', 'string', 'regex:/^\d+$/'],
             'active' => ['boolean'],
-            'available_slots' => ['required', 'integer', 'min:0'],
+            'available_slots' => ['required', 'string', 'regex:/^\d+$/'],
             'document_requirements' => ['array'],
             'document_requirements.*.name' => ['required_with:document_requirements', 'string', 'max:255'],
             'document_requirements.*.description' => ['required_with:document_requirements', 'string'],
@@ -70,17 +70,17 @@ final class ScholarshipController extends Controller
         $scholarship = \App\Models\ScholarshipProgram::query()->create([
             'name' => $validated['name'],
             'description' => $validated['description'],
-            'total_budget' => $validated['total_budget'],
-            'per_student_budget' => $validated['per_student_budget'],
+            'total_budget' => (float) $validated['total_budget'],
+            'per_student_budget' => (float) $validated['per_student_budget'],
             'school_type_eligibility' => $validated['school_type_eligibility'],
-            'min_gpa' => $validated['min_gpa'],
-            'min_units' => $validated['min_units'],
+            'min_gpa' => (float) $validated['min_gpa'],
+            'min_units' => $validated['min_units'] ? (int) $validated['min_units'] : null,
             'semester' => $validated['semester'],
             'academic_year' => $validated['academic_year'],
             'application_deadline' => $validated['application_deadline'],
-            'community_service_days' => $validated['community_service_days'],
+            'community_service_days' => (int) $validated['community_service_days'],
             'active' => $validated['active'] ?? true,
-            'available_slots' => $validated['available_slots'],
+            'available_slots' => (int) $validated['available_slots'],
         ]);
 
         if (isset($validated['document_requirements'])) {
@@ -184,17 +184,17 @@ final class ScholarshipController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
-            'total_budget' => ['required', 'numeric', 'min:0'],
-            'per_student_budget' => ['required', 'numeric', 'min:0'],
+            'total_budget' => ['required', 'string', 'regex:/^\d+(\.\d{1,2})?$/'],
+            'per_student_budget' => ['required', 'string', 'regex:/^\d+(\.\d{1,2})?$/'],
             'school_type_eligibility' => ['required', 'in:high_school,college,both'],
-            'min_gpa' => ['required', 'numeric', 'min:0', 'max:100'],
-            'min_units' => ['nullable', 'numeric', 'min:0'],
+            'min_gpa' => ['required', 'string', 'regex:/^\d+(\.\d{1,2})?$/'],
+            'min_units' => ['nullable', 'string', 'regex:/^\d+$/'],
             'semester' => ['required', 'string', 'max:255'],
             'academic_year' => ['required', 'string', 'max:255'],
             'application_deadline' => ['required', 'date'],
-            'community_service_days' => ['required', 'integer', 'min:0'],
+            'community_service_days' => ['required', 'string', 'regex:/^\d+$/'],
             'active' => ['boolean'],
-            'available_slots' => ['required', 'integer', 'min:0'],
+            'available_slots' => ['required', 'string', 'regex:/^\d+$/'],
             // Add validation for document requirements
             'documentRequirements' => ['array'],
             'documentRequirements.*.id' => ['nullable', 'integer'],
@@ -213,6 +213,15 @@ final class ScholarshipController extends Controller
 
         // Update the scholarship basic fields
         $scholarshipData = collect($validated)->except(['documentRequirements'])->toArray();
+
+        // Convert string numeric fields to proper types
+        $scholarshipData['total_budget'] = (float) $scholarshipData['total_budget'];
+        $scholarshipData['per_student_budget'] = (float) $scholarshipData['per_student_budget'];
+        $scholarshipData['min_gpa'] = (float) $scholarshipData['min_gpa'];
+        $scholarshipData['min_units'] = $scholarshipData['min_units'] ? (int) $scholarshipData['min_units'] : null;
+        $scholarshipData['community_service_days'] = (int) $scholarshipData['community_service_days'];
+        $scholarshipData['available_slots'] = (int) $scholarshipData['available_slots'];
+
         $scholarship->update($scholarshipData);
 
         // Handle document requirements update

@@ -11,20 +11,43 @@ import { Label } from '@/components/ui/label';
 import { AlertCircle, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
+// Utility functions for currency formatting and numeric validation
+const formatCurrency = (value: string): string => {
+  if (!value) return '';
+  const numericValue = parseFloat(value.replace(/[^\d.]/g, ''));
+  if (isNaN(numericValue)) return '';
+  return new Intl.NumberFormat('en-PH', {
+    style: 'currency',
+    currency: 'PHP',
+    minimumFractionDigits: 2,
+  }).format(numericValue);
+};
+
+const handleNumericInput = (value: string): string => {
+  // Remove non-numeric characters except decimal point
+  return value.replace(/[^\d.]/g, '');
+};
+
+const validateNumeric = (value: string): boolean => {
+  if (!value) return false;
+  const numericValue = parseFloat(value);
+  return !isNaN(numericValue) && numericValue >= 0;
+};
+
 interface ScholarshipFormFields {
   name: string;
   description: string;
-  total_budget: number;
-  per_student_budget: number;
+  total_budget: string;
+  per_student_budget: string;
   school_type_eligibility: string;
-  min_gpa: number;
-  min_units: number | null;
+  min_gpa: string;
+  min_units: string;
   semester: string;
   academic_year: string;
   application_deadline: string;
-  community_service_days: number;
+  community_service_days: string;
   active: boolean;
-  available_slots: number;
+  available_slots: string;
   document_requirements: DocumentRequirementForm[];
 }
 
@@ -45,17 +68,17 @@ export default function Create() {
   const { data, setData, post, errors, processing } = useForm<ScholarshipFormData>({
     name: '',
     description: '',
-    total_budget: 0,
-    per_student_budget: 0,
+    total_budget: '',
+    per_student_budget: '',
     school_type_eligibility: 'both',
-    min_gpa: 75, // Default minimum GPA
-    min_units: 12, // Default minimum units, fits number | null
+    min_gpa: '75', // Default minimum GPA
+    min_units: '12', // Default minimum units
     semester: 'Fall',
     academic_year: '2024-2025',
     application_deadline: '',
-    community_service_days: 5,
+    community_service_days: '5',
     active: true, // Fits boolean
-    available_slots: 10, // Default available slots
+    available_slots: '10', // Default available slots
     document_requirements: [], // Fits DocumentRequirementForm[]
   });
 
@@ -207,30 +230,38 @@ export default function Create() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4"> {/* Changed to 3 columns for budget, per_student_budget, and available_slots */}
                 <div className="space-y-2">
-                  <Label htmlFor="total_budget">Total Budget ($)</Label>
+                  <Label htmlFor="total_budget">Total Budget (PHP)</Label>
                   <Input
                     id="total_budget"
-                    type="number"
-                    min="0"
-                    step="0.01"
+                    type="text"
                     value={data.total_budget}
-                    onChange={e => setData('total_budget', parseFloat(e.target.value) || 0)}
+                    onChange={e => setData('total_budget', handleNumericInput(e.target.value))}
+                    placeholder="0.00"
                     required
                   />
+                  {data.total_budget && (
+                    <p className="text-sm text-muted-foreground">
+                      Preview: {formatCurrency(data.total_budget)}
+                    </p>
+                  )}
                   {errors.total_budget && <p className="text-sm text-destructive">{errors.total_budget}</p>}
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="per_student_budget">Award per Student ($)</Label>
+                  <Label htmlFor="per_student_budget">Award per Student (PHP)</Label>
                   <Input
                     id="per_student_budget"
-                    type="number"
-                    min="0"
-                    step="0.01"
+                    type="text"
                     value={data.per_student_budget}
-                    onChange={e => setData('per_student_budget', parseFloat(e.target.value) || 0)}
+                    onChange={e => setData('per_student_budget', handleNumericInput(e.target.value))}
+                    placeholder="0.00"
                     required
                   />
+                  {data.per_student_budget && (
+                    <p className="text-sm text-muted-foreground">
+                      Preview: {formatCurrency(data.per_student_budget)}
+                    </p>
+                  )}
                   {errors.per_student_budget && <p className="text-sm text-destructive">{errors.per_student_budget}</p>}
                 </div>
 
@@ -238,10 +269,10 @@ export default function Create() {
                   <Label htmlFor="available_slots">Available Slots</Label>
                   <Input
                     id="available_slots"
-                    type="number"
-                    min="0"
+                    type="text"
                     value={data.available_slots}
-                    onChange={e => setData('available_slots', parseInt(e.target.value) || 0)}
+                    onChange={e => setData('available_slots', e.target.value.replace(/[^\d]/g, ''))}
+                    placeholder="0"
                     required
                   />
                   {errors.available_slots && <p className="text-sm text-destructive">{errors.available_slots}</p>}
@@ -271,12 +302,10 @@ export default function Create() {
                   <Label htmlFor="min_gpa">Minimum GPA (0-100%)</Label>
                   <Input
                     id="min_gpa"
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="0.01"
+                    type="text"
                     value={data.min_gpa}
-                    onChange={e => setData('min_gpa', parseFloat(e.target.value) || 0)}
+                    onChange={e => setData('min_gpa', handleNumericInput(e.target.value))}
+                    placeholder="75.00"
                     required
                   />
                   {errors.min_gpa && <p className="text-sm text-destructive">{errors.min_gpa}</p>}
@@ -286,10 +315,10 @@ export default function Create() {
                   <Label htmlFor="min_units">Minimum Units (College Only)</Label>
                   <Input
                     id="min_units"
-                    type="number"
-                    min="0"
-                    value={data.min_units || ''}
-                    onChange={e => setData('min_units', e.target.value ? parseInt(e.target.value) : null)}
+                    type="text"
+                    value={data.min_units}
+                    onChange={e => setData('min_units', e.target.value.replace(/[^\d]/g, ''))}
+                    placeholder="12"
                     disabled={data.school_type_eligibility === 'high_school'}
                   />
                   {errors.min_units && <p className="text-sm text-destructive">{errors.min_units}</p>}
@@ -300,10 +329,10 @@ export default function Create() {
                 <Label htmlFor="community_service_days">Required Community Service Days</Label>
                 <Input
                   id="community_service_days"
-                  type="number"
-                  min="0"
+                  type="text"
                   value={data.community_service_days}
-                  onChange={e => setData('community_service_days', parseInt(e.target.value) || 0)}
+                  onChange={e => setData('community_service_days', e.target.value.replace(/[^\d]/g, ''))}
+                  placeholder="5"
                   required
                 />
                 {errors.community_service_days && <p className="text-sm text-destructive">{errors.community_service_days}</p>}
