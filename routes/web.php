@@ -60,6 +60,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         return back()->with('success', 'Test notification sent!');
     })->name('test-notification');
+
+    // Test routes for flash messages
+    Route::post('/test-flash/success', function () {
+        return back()->with('success', 'This is a success message!');
+    })->name('test-flash.success');
+
+    Route::post('/test-flash/error', function () {
+        return back()->with('error', 'This is an error message!');
+    })->name('test-flash.error');
+
+    Route::post('/test-flash/warning', function () {
+        return back()->with('warning', 'This is a warning message!');
+    })->name('test-flash.warning');
+
+    Route::post('/test-flash/info', function () {
+        return back()->with('info', 'This is an info message!');
+    })->name('test-flash.info');
+
+    Route::post('/test-flash/status', function () {
+        return back()->with('status', 'This is a status message!');
+    })->name('test-flash.status');
 });
 
 // Development-only quick login routes

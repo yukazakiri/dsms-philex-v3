@@ -12,18 +12,41 @@ import { toast } from 'sonner';
 
 export default function AppSidebarLayout({ children, breadcrumbs = [] }: PropsWithChildren<{ breadcrumbs?: BreadcrumbItem[] }>) {
     const page = usePage();
-    const { flash } = page.props as { flash?: { success?: string; error?: string } };
+    const { flash } = page.props as {
+        flash?: {
+            success?: string;
+            error?: string;
+            warning?: string;
+            info?: string;
+            status?: string;
+        }
+    };
 
     useEffect(() => {
+        // Handle success messages
         if (flash?.success) {
             toast.success(flash.success);
-            // Clear the flash message from props after displaying to prevent re-showing on component re-renders without a new flash
-            // This assumes Inertia doesn't automatically clear it from props client-side, which it usually doesn't for shared props.
-            // A more robust way might involve managing a 'messageDisplayed' state if toasts re-appear unexpectedly.
-            // For now, we'll rely on Inertia only delivering it once per redirect.
         }
+
+        // Handle error messages
         if (flash?.error) {
             toast.error(flash.error);
+        }
+
+        // Handle warning messages
+        if (flash?.warning) {
+            toast.warning(flash.warning);
+        }
+
+        // Handle info messages
+        if (flash?.info) {
+            toast.info(flash.info);
+        }
+
+        // Handle status messages (typically from Laravel auth)
+        if (flash?.status) {
+            // Status messages are usually informational
+            toast.info(flash.status);
         }
     }, [flash]);
 

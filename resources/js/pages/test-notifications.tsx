@@ -89,6 +89,46 @@ function TestNotificationsContent() {
 
         <Card>
           <CardHeader>
+            <CardTitle>Flash Message Tests</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+              <Button
+                variant="default"
+                onClick={() => router.post('/test-flash/success')}
+              >
+                Success
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => router.post('/test-flash/error')}
+              >
+                Error
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => router.post('/test-flash/warning')}
+              >
+                Warning
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => router.post('/test-flash/info')}
+              >
+                Info
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => router.post('/test-flash/status')}
+              >
+                Status
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
             <CardTitle>Manual Test Commands</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">

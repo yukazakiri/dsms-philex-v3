@@ -1,7 +1,9 @@
 import AppLogoIcon from '@/components/app-logo-icon';
+import { Toaster } from '@/components/ui/sonner';
 import { type SharedData } from '@/types/index.d';
 import { Link, usePage } from '@inertiajs/react';
-import { type PropsWithChildren } from 'react';
+import { type PropsWithChildren, useEffect } from 'react';
+import { toast } from 'sonner';
 
 interface AuthLayoutProps {
     title?: string;
@@ -9,7 +11,36 @@ interface AuthLayoutProps {
 }
 
 export default function AuthSplitLayout({ children, title, description }: PropsWithChildren<AuthLayoutProps>) {
-    const { name, quote } = usePage<SharedData>().props;
+    const page = usePage<SharedData>();
+    const { name, quote, flash } = page.props;
+
+    useEffect(() => {
+        // Handle success messages
+        if (flash?.success) {
+            toast.success(flash.success);
+        }
+
+        // Handle error messages
+        if (flash?.error) {
+            toast.error(flash.error);
+        }
+
+        // Handle warning messages
+        if (flash?.warning) {
+            toast.warning(flash.warning);
+        }
+
+        // Handle info messages
+        if (flash?.info) {
+            toast.info(flash.info);
+        }
+
+        // Handle status messages (typically from Laravel auth)
+        if (flash?.status) {
+            // Status messages are usually informational
+            toast.info(flash.status);
+        }
+    }, [flash]);
 
     return (
         <div className="flex h-screen items-center justify-center">
@@ -28,6 +59,7 @@ export default function AuthSplitLayout({ children, title, description }: PropsW
                     <img src="/images/cover.jpg" className="h-full w-full rounded-lg object-cover brightness-90 filter" alt="" />
                 </div>
             </div>
+            <Toaster position="top-right" richColors closeButton />
         </div>
     );
 }
