@@ -9,8 +9,8 @@ import { motion } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { CalendarIcon, FileTextIcon, ClockIcon, CheckCircleIcon, AlertCircleIcon, 
-         ArrowUpIcon, DollarSignIcon, SearchIcon, BookOpenIcon, AwardIcon, 
+import { CalendarIcon, FileTextIcon, ClockIcon, CheckCircleIcon, AlertCircleIcon,
+         ArrowUpIcon, Coins, SearchIcon, BookOpenIcon, AwardIcon,
          XCircleIcon, ChevronRightIcon, InfoIcon, TimerIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 

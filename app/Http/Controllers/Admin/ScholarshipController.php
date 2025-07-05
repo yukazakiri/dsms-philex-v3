@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -49,17 +50,17 @@ final class ScholarshipController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
-            'total_budget' => ['required', 'numeric', 'min:0'],
-            'per_student_budget' => ['required', 'numeric', 'min:0'],
+            'total_budget' => ['required', 'string', 'regex:/^\d+(\.\d{1,2})?$/'],
+            'per_student_budget' => ['required', 'string', 'regex:/^\d+(\.\d{1,2})?$/'],
             'school_type_eligibility' => ['required', 'in:high_school,college,both'],
-            'min_gpa' => ['required', 'numeric', 'min:0', 'max:100'], // Assuming GPA is 0-100 scale
-            'min_units' => ['nullable', 'numeric', 'min:0'],
+            'min_gpa' => ['required', 'string', 'regex:/^\d+(\.\d{1,2})?$/'],
+            'min_units' => ['nullable', 'string', 'regex:/^\d+$/'],
             'semester' => ['required', 'string', 'max:255'],
             'academic_year' => ['required', 'string', 'max:255'],
             'application_deadline' => ['required', 'date'],
-            'community_service_days' => ['required', 'integer', 'min:0'],
+            'community_service_days' => ['required', 'string', 'regex:/^\d+$/'],
             'active' => ['boolean'],
-            'available_slots' => ['required', 'integer', 'min:0'],
+            'available_slots' => ['required', 'string', 'regex:/^\d+$/'],
             'document_requirements' => ['array'],
             'document_requirements.*.name' => ['required_with:document_requirements', 'string', 'max:255'],
             'document_requirements.*.description' => ['required_with:document_requirements', 'string'],
@@ -69,17 +70,17 @@ final class ScholarshipController extends Controller
         $scholarship = \App\Models\ScholarshipProgram::query()->create([
             'name' => $validated['name'],
             'description' => $validated['description'],
-            'total_budget' => $validated['total_budget'],
-            'per_student_budget' => $validated['per_student_budget'],
+            'total_budget' => (float) $validated['total_budget'],
+            'per_student_budget' => (float) $validated['per_student_budget'],
             'school_type_eligibility' => $validated['school_type_eligibility'],
-            'min_gpa' => $validated['min_gpa'],
-            'min_units' => $validated['min_units'],
+            'min_gpa' => (float) $validated['min_gpa'],
+            'min_units' => $validated['min_units'] ? (int) $validated['min_units'] : null,
             'semester' => $validated['semester'],
             'academic_year' => $validated['academic_year'],
             'application_deadline' => $validated['application_deadline'],
-            'community_service_days' => $validated['community_service_days'],
+            'community_service_days' => (int) $validated['community_service_days'],
             'active' => $validated['active'] ?? true,
-            'available_slots' => $validated['available_slots'],
+            'available_slots' => (int) $validated['available_slots'],
         ]);
 
         if (isset($validated['document_requirements'])) {
@@ -183,17 +184,17 @@ final class ScholarshipController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
-            'total_budget' => ['required', 'numeric', 'min:0'],
-            'per_student_budget' => ['required', 'numeric', 'min:0'],
+            'total_budget' => ['required', 'string', 'regex:/^\d+(\.\d{1,2})?$/'],
+            'per_student_budget' => ['required', 'string', 'regex:/^\d+(\.\d{1,2})?$/'],
             'school_type_eligibility' => ['required', 'in:high_school,college,both'],
-            'min_gpa' => ['required', 'numeric', 'min:0', 'max:100'],
-            'min_units' => ['nullable', 'numeric', 'min:0'],
+            'min_gpa' => ['required', 'string', 'regex:/^\d+(\.\d{1,2})?$/'],
+            'min_units' => ['nullable', 'string', 'regex:/^\d+$/'],
             'semester' => ['required', 'string', 'max:255'],
             'academic_year' => ['required', 'string', 'max:255'],
             'application_deadline' => ['required', 'date'],
-            'community_service_days' => ['required', 'integer', 'min:0'],
+            'community_service_days' => ['required', 'string', 'regex:/^\d+$/'],
             'active' => ['boolean'],
-            'available_slots' => ['required', 'integer', 'min:0'],
+            'available_slots' => ['required', 'string', 'regex:/^\d+$/'],
             // Add validation for document requirements
             'documentRequirements' => ['array'],
             'documentRequirements.*.id' => ['nullable', 'integer'],
@@ -212,6 +213,15 @@ final class ScholarshipController extends Controller
 
         // Update the scholarship basic fields
         $scholarshipData = collect($validated)->except(['documentRequirements'])->toArray();
+
+        // Convert string numeric fields to proper types
+        $scholarshipData['total_budget'] = (float) $scholarshipData['total_budget'];
+        $scholarshipData['per_student_budget'] = (float) $scholarshipData['per_student_budget'];
+        $scholarshipData['min_gpa'] = (float) $scholarshipData['min_gpa'];
+        $scholarshipData['min_units'] = $scholarshipData['min_units'] ? (int) $scholarshipData['min_units'] : null;
+        $scholarshipData['community_service_days'] = (int) $scholarshipData['community_service_days'];
+        $scholarshipData['available_slots'] = (int) $scholarshipData['available_slots'];
+
         $scholarship->update($scholarshipData);
 
         // Handle document requirements update
@@ -316,15 +326,98 @@ final class ScholarshipController extends Controller
      */
     public function destroy(ScholarshipProgram $scholarship): RedirectResponse
     {
-        if ($scholarship->scholarshipApplications()->exists()) {
-            return Redirect::back()->with('error', 'Cannot delete scholarship program with existing applications.');
+        try {
+            // Load all related data for proper cleanup
+            $scholarship->load([
+                'scholarshipApplications.documentUploads',
+                'scholarshipApplications.communityServiceReports',
+                'scholarshipApplications.communityServiceEntries',
+                'scholarshipApplications.disbursements',
+                'documentRequirements'
+            ]);
+
+            Log::info('Starting scholarship deletion process', [
+                'scholarship_id' => $scholarship->id,
+                'scholarship_name' => $scholarship->name,
+                'applications_count' => $scholarship->scholarshipApplications->count(),
+                'document_requirements_count' => $scholarship->documentRequirements->count()
+            ]);
+
+            // Delete all document upload files from storage
+            foreach ($scholarship->scholarshipApplications as $application) {
+                foreach ($application->documentUploads as $documentUpload) {
+                    $this->deleteDocumentFile($documentUpload->file_path);
+                }
+
+                // Delete community service report PDF files if they exist
+                foreach ($application->communityServiceReports as $report) {
+                    if ($report->pdf_report_path) {
+                        $this->deleteDocumentFile($report->pdf_report_path);
+                    }
+                }
+
+                // Delete community service entry photos if they exist
+                foreach ($application->communityServiceEntries as $entry) {
+                    if ($entry->photos) {
+                        $photos = is_string($entry->photos) ? json_decode($entry->photos, true) : $entry->photos;
+                        if (is_array($photos)) {
+                            foreach ($photos as $photoPath) {
+                                $this->deleteDocumentFile($photoPath);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // The database foreign key constraints with cascadeOnDelete() will handle
+            // the deletion of related records automatically:
+            // - scholarship_applications (cascadeOnDelete)
+            // - document_uploads (cascadeOnDelete via scholarship_applications)
+            // - community_service_reports (cascadeOnDelete via scholarship_applications)
+            // - community_service_entries (cascadeOnDelete via scholarship_applications)
+            // - disbursements (cascadeOnDelete via scholarship_applications)
+
+            // Manually delete document requirements (no cascade constraint)
+            $scholarship->documentRequirements()->delete();
+
+            // Delete the scholarship program (this will trigger cascade deletions)
+            $scholarship->delete();
+
+            Log::info('Scholarship deletion completed successfully', [
+                'scholarship_id' => $scholarship->id,
+                'scholarship_name' => $scholarship->name
+            ]);
+
+            return Redirect::route('admin.scholarships.index')
+                ->with('success', 'Scholarship program and all related data deleted successfully.');
+
+        } catch (\Exception $e) {
+            Log::error('Error deleting scholarship program', [
+                'scholarship_id' => $scholarship->id,
+                'scholarship_name' => $scholarship->name,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return Redirect::back()->with('error', 'An error occurred while deleting the scholarship program. Please try again.');
         }
+    }
 
-        // Manually delete related document requirements
-        $scholarship->documentRequirements()->delete();
-        $scholarship->delete();
-
-        return Redirect::route('admin.scholarships.index')
-            ->with('success', 'Scholarship program deleted successfully.');
+    /**
+     * Delete a file from storage if it exists.
+     */
+    private function deleteDocumentFile(string $filePath): void
+    {
+        try {
+            if (Storage::disk('public')->exists($filePath)) {
+                Storage::disk('public')->delete($filePath);
+                Log::info('Deleted file from storage', ['file_path' => $filePath]);
+            }
+        } catch (\Exception $e) {
+            Log::warning('Failed to delete file from storage', [
+                'file_path' => $filePath,
+                'error' => $e->getMessage()
+            ]);
+        }
     }
 }

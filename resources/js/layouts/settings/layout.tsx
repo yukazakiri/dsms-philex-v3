@@ -1,10 +1,12 @@
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { Toaster } from '@/components/ui/sonner';
 import { cn } from '@/lib/utils';
 import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/react';
-import { type PropsWithChildren } from 'react';
+import { Link, usePage } from '@inertiajs/react';
+import { type PropsWithChildren, useEffect } from 'react';
+import { toast } from 'sonner';
 
 const sidebarNavItems: NavItem[] = [
     {
@@ -25,6 +27,45 @@ const sidebarNavItems: NavItem[] = [
 ];
 
 export default function SettingsLayout({ children }: PropsWithChildren) {
+    const page = usePage();
+    const { flash } = page.props as {
+        flash?: {
+            success?: string;
+            error?: string;
+            warning?: string;
+            info?: string;
+            status?: string;
+        }
+    };
+
+    useEffect(() => {
+        // Handle success messages
+        if (flash?.success) {
+            toast.success(flash.success);
+        }
+
+        // Handle error messages
+        if (flash?.error) {
+            toast.error(flash.error);
+        }
+
+        // Handle warning messages
+        if (flash?.warning) {
+            toast.warning(flash.warning);
+        }
+
+        // Handle info messages
+        if (flash?.info) {
+            toast.info(flash.info);
+        }
+
+        // Handle status messages (typically from Laravel auth)
+        if (flash?.status) {
+            // Status messages are usually informational
+            toast.info(flash.status);
+        }
+    }, [flash]);
+
     // When server-side rendering, we only render the layout on the client...
     if (typeof window === 'undefined') {
         return null;
@@ -63,6 +104,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                     <section className="max-w-xl space-y-12">{children}</section>
                 </div>
             </div>
+            <Toaster position="top-right" richColors closeButton />
         </div>
     );
 }

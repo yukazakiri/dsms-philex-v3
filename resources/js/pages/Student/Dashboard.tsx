@@ -7,9 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'; // Keep for ApplicationsSection internal tabs
 import { CompleteProfileModal } from '@/components/CompleteProfileModal';
 import {
-  CalendarIcon, GraduationCapIcon, FileTextIcon, UserIcon, 
+  CalendarIcon, GraduationCapIcon, FileTextIcon, UserIcon,
   ClockIcon, CheckCircleIcon, AlertCircleIcon, BookOpenIcon,
-  HomeIcon, TrendingUpIcon, AwardIcon, BellIcon, DollarSignIcon,
+  HomeIcon, TrendingUpIcon, AwardIcon, BellIcon, Coins,
   ChevronRightIcon, SearchIcon, MapPinIcon, BadgeIcon, CircleIcon,
   LayoutDashboardIcon, BriefcaseIcon, SparklesIcon, StarIcon, PlusIcon, ArrowRightIcon,
   ListChecks, ThumbsUp, Eye, MessageSquare, FileWarning, BarChart3, TargetIcon, // Added TargetIcon
@@ -453,7 +453,11 @@ const ApplicationsSection: React.FC<ApplicationsSectionProps> = ({ applications,
                     </CardHeader>
                     <CardContent className="space-y-2">
                       <div className="text-xs">
-                        <p>Amount: <span className="font-semibold text-green-600">${(app as any).scholarship?.amount?.toLocaleString()}</span></p>
+                        <p>Amount: <span className="font-semibold text-green-600">{new Intl.NumberFormat('en-PH', {
+                          style: 'currency',
+                          currency: 'PHP',
+                          minimumFractionDigits: 2,
+                        }).format((app as any).scholarship?.amount || 0)}</span></p>
                         <p>Deadline: <span className="font-semibold">{new Date((app as any).scholarship?.deadline).toLocaleDateString()}</span></p>
                       </div>
                       <div>

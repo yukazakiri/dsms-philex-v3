@@ -4,12 +4,23 @@ import { BreadcrumbItem, ScholarshipProgram } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { cn } from '@/lib/utils';
+import { buttonVariants } from '@/components/ui/button';
 
 interface ScholarshipIndexProps {
   scholarships: (ScholarshipProgram & { scholarship_applications_count: number })[];
 }
 
 export default function Index({ scholarships }: ScholarshipIndexProps) {
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState<number | null>(null);
+
+  const formatCurrency = (amount: number) => {
+    return amount.toLocaleString('en-PH', { style: 'currency', currency: 'PHP' });
+  };
+
   const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Admin Dashboard', href: route('admin.dashboard') },
     { title: 'Scholarship Programs' }
@@ -58,8 +69,8 @@ export default function Index({ scholarships }: ScholarshipIndexProps) {
                       <div className="text-xs text-muted-foreground">{scholarship.semester} | {scholarship.academic_year}</div>
                     </td>
                     <td className="py-3 px-4">
-                      <div>${scholarship.per_student_budget.toLocaleString()} / student</div>
-                      <div className="text-xs text-muted-foreground">Total: ${scholarship.total_budget.toLocaleString()}</div>
+                      <div>{formatCurrency(scholarship.per_student_budget)} / student</div>
+                      <div className="text-xs text-muted-foreground">Total: {formatCurrency(scholarship.total_budget)}</div>
                     </td>
                     <td className="py-3 px-4">
                       <Badge variant="outline">
@@ -86,6 +97,41 @@ export default function Index({ scholarships }: ScholarshipIndexProps) {
                         <Button asChild size="sm" variant="outline">
                           <Link href={route('admin.scholarships.edit', scholarship.id)}>Edit</Link>
                         </Button>
+                        <AlertDialog open={deleteDialogOpen === scholarship.id} onOpenChange={(open) => setDeleteDialogOpen(open ? scholarship.id : null)}>
+                          <AlertDialogTrigger asChild>
+                            <Button size="sm" variant="destructive">
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete "{scholarship.name}"?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This will permanently delete this scholarship program and ALL related data including:
+                                <br />• {scholarship.scholarship_applications_count} applications
+                                <br />• All document uploads and files
+                                <br />• All community service reports
+                                <br />• All disbursement records
+                                <br /><br />
+                                This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction asChild>
+                                <Link
+                                  href={route('admin.scholarships.destroy', scholarship.id)}
+                                  method="delete"
+                                  as="button"
+                                  className={cn(buttonVariants({ variant: 'destructive' }))}
+                                  onSuccess={() => setDeleteDialogOpen(null)}
+                                >
+                                  Delete
+                                </Link>
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
                     </td>
                   </tr>

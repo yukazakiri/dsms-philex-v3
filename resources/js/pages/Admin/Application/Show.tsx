@@ -38,7 +38,7 @@ import {
     BookOpenText,
     CheckCircle2,
     Clock,
-    DollarSign,
+    Coins,
     Download,
     Edit3,
     ExternalLink,
@@ -915,7 +915,7 @@ export default function Show({
                             <Card>
                                 <CardHeader>
                                     <CardTitle className="flex items-center text-xl">
-                                        <DollarSign className="text-primary mr-2 h-6 w-6" />
+                                        <Coins className="text-primary mr-2 h-6 w-6" />
                                         Disbursements
                                     </CardTitle>
                                 </CardHeader>

@@ -18,7 +18,7 @@ import {
   Edit,
   Trash2,
   CalendarDays,
-  DollarSign,
+  Coins,
   Users,
   ClipboardList,
   FileText,
@@ -140,8 +140,8 @@ export default function Show({ scholarship }: ScholarshipShowProps) {
 
 
   const stats = [
-    { name: 'Total Budget', value: formatCurrency(scholarship.total_budget), icon: DollarSign },
-    { name: 'Per Student Budget', value: formatCurrency(scholarship.per_student_budget), icon: DollarSign },
+    { name: 'Total Budget', value: formatCurrency(scholarship.total_budget), icon: Coins },
+    { name: 'Per Student Budget', value: formatCurrency(scholarship.per_student_budget), icon: Coins },
     { name: 'Available Slots', value: scholarship.available_slots, icon: Users },
     { name: 'Applications', value: totalApplications, icon: ClipboardList },
     { name: 'Deadline', value: formatDate(scholarship.application_deadline), icon: CalendarDays },
@@ -185,10 +185,15 @@ export default function Show({ scholarship }: ScholarshipShowProps) {
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogTitle>Delete Scholarship Program?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete the scholarship program.
-                      You cannot delete a scholarship with existing applications.
+                      This action cannot be undone. This will permanently delete the scholarship program and ALL related data including:
+                      <br />• All applications ({scholarship.scholarshipApplications?.length || 0} applications)
+                      <br />• All document uploads and files
+                      <br />• All community service reports and entries
+                      <br />• All disbursement records
+                      <br /><br />
+                      Are you sure you want to proceed?
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
