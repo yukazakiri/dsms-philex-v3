@@ -8,13 +8,15 @@ import {
   HeartHandshakeIcon,
   TrendingUpIcon,
   CheckCircle2Icon,
-  MousePointerIcon
+  MousePointerIcon,
+  SmartphoneIcon
 } from "lucide-react";
 import { Link } from "@inertiajs/react";
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { ApkDownloadSection } from "./ApkDownloadSection";
 
 // Animated step card component
 interface StepCardProps {
@@ -279,6 +281,13 @@ export function HeroSection() {
                 <ArrowRightIcon className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
               </Link>
             </Button>
+            <Button asChild variant="secondary" size="lg">
+              <Link href="#mobile-app" className="group">
+                <SmartphoneIcon className="mr-2 h-4 w-4" />
+                Get Mobile App
+                <ArrowRightIcon className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+              </Link>
+            </Button>
           </motion.div>
         </div>
 
@@ -312,6 +321,11 @@ export function HeroSection() {
               delay={1.7}
             />
           </div>
+        </div>
+
+        {/* Mobile App Download Section */}
+        <div id="mobile-app" className="mt-20">
+          <ApkDownloadSection />
         </div>
 
       </div>

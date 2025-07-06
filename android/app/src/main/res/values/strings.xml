@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">DSMS Philex</string>
+    <string name="title_activity_main">DSMS Philex</string>
+    <string name="package_name">com.philex.dsms</string>
+    <string name="custom_url_scheme">com.philex.dsms</string>
+</resources>

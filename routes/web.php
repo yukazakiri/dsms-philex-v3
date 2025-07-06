@@ -12,6 +12,16 @@ Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
 
+// PWA Mobile Entry Point
+Route::get('/mobile', function () {
+    return response()->file(public_path('mobile/index.html'));
+})->name('mobile');
+
+// PWA Downloads Page
+Route::get('/downloads', function () {
+    return response()->file(public_path('downloads/index.html'));
+})->name('downloads');
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
         $user = Auth::user();

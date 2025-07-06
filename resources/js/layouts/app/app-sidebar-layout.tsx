@@ -3,6 +3,7 @@ import { AppShell } from '@/components/app-shell';
 import { AppSidebar } from '@/components/app-sidebar';
 import { AppSidebarHeader } from '@/components/app-sidebar-header';
 import { MobileBottomNav } from '@/components/mobile-bottom-nav';
+import { PWAInstallPrompt } from '@/components/pwa-install-prompt';
 import { Toaster } from '@/components/ui/sonner';
 import { NotificationProvider } from '@/hooks/use-notifications';
 import { type BreadcrumbItem } from '@/types';
@@ -60,6 +61,7 @@ export default function AppSidebarLayout({ children, breadcrumbs = [] }: PropsWi
                 </AppContent>
                 <MobileBottomNav />
             </AppShell>
+            <PWAInstallPrompt />
             <Toaster position="top-right" richColors closeButton />
         </NotificationProvider>
     );

@@ -4,6 +4,7 @@ import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 import { initializeTheme } from './hooks/use-appearance';
+import { registerSW } from 'virtual:pwa-register';
 
 import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
@@ -15,6 +16,18 @@ configureEcho({
 
 // Initialize theme before anything else
 initializeTheme();
+
+// Register PWA Service Worker
+const updateSW = registerSW({
+    onNeedRefresh() {
+        if (confirm('New content available. Reload?')) {
+            updateSW(true);
+        }
+    },
+    onOfflineReady() {
+        console.log('App ready to work offline');
+    },
+});
 
 // Configure Pusher and Echo
 (window as any).Pusher = Pusher;

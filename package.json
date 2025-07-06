@@ -4,6 +4,8 @@
     "scripts": {
         "build": "vite build",
         "build:ssr": "vite build && vite build --ssr",
+        "build:apk": "node scripts/build-apk.js",
+        "build:all": "bun run build && bun run build:apk",
         "dev": "vite",
         "format": "prettier --write resources/",
         "format:check": "prettier --check resources/",
@@ -11,8 +13,12 @@
         "types": "tsc --noEmit"
     },
     "devDependencies": {
+        "@capacitor/android": "^7.4.1",
+        "@capacitor/cli": "^7.4.1",
+        "@capacitor/core": "^7.4.1",
         "@eslint/js": "^9.30.1",
         "@laravel/echo-react": "^2.1.6",
+        "@pwabuilder/cli": "^0.0.17",
         "@types/node": "^22.16.0",
         "eslint": "^9.30.1",
         "eslint-config-prettier": "^10.1.5",
@@ -22,7 +28,12 @@
         "prettier": "^3.6.2",
         "prettier-plugin-organize-imports": "^4.1.0",
         "prettier-plugin-tailwindcss": "^0.6.13",
-        "typescript-eslint": "^8.35.1"
+        "typescript-eslint": "^8.35.1",
+        "vite-plugin-pwa": "^1.0.1",
+        "workbox-precaching": "^7.3.0",
+        "workbox-routing": "^7.3.0",
+        "workbox-strategies": "^7.3.0",
+        "workbox-window": "^7.3.0"
     },
     "dependencies": {
         "pusher-js": "^8.4.0",

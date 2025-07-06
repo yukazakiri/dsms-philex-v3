@@ -1,0 +1,21 @@
+{
+  "name": "DSMS Philex",
+  "version": "1.0.0",
+  "packageId": "com.philex.dsms",
+  "size": "2.96 MB",
+  "lastUpdated": "2025-07-06T08:45:03.784Z",
+  "downloadUrl": "/downloads/dsms-philex.apk",
+  "installInstructions": "Enable 'Install from unknown sources' in Android settings, then install the APK.",
+  "generatedWith": "Android Studio + Capacitor",
+  "buildType": "release",
+  "buildDate": "7/6/2025",
+  "buildTime": "4:45:03 PM",
+  "fileSize": 3107397,
+  "fileSizeFormatted": "2.96 MB",
+  "signed": "Yes",
+  "architecture": "Universal (ARM + x86)",
+  "minSdkVersion": "22",
+  "targetSdkVersion": "34",
+  "buildTools": "Android Studio",
+  "framework": "Capacitor + React + Laravel"
+}

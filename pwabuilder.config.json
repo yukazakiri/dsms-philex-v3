@@ -1,0 +1,38 @@
+{
+  "name": "DSMS Philex Scholarships",
+  "packageId": "com.philex.dsms",
+  "version": "1.0.0",
+  "manifestUrl": "/site.webmanifest",
+  "platforms": {
+    "android": {
+      "package": {
+        "name": "DSMS Philex",
+        "packageId": "com.philex.dsms",
+        "version": "1.0.0"
+      },
+      "signing": {
+        "keystore": null,
+        "alias": null,
+        "password": null,
+        "keystorePassword": null
+      },
+      "features": {
+        "locationService": false,
+        "playBilling": false,
+        "chromeCustomTabs": true,
+        "webNotifications": true
+      },
+      "display": "standalone",
+      "orientation": "portrait",
+      "themeColor": "#1f2937",
+      "backgroundColor": "#ffffff",
+      "iconUrl": "/android-chrome-512x512.png",
+      "splashScreenColor": "#1f2937",
+      "shortcuts": true
+    }
+  },
+  "build": {
+    "outputDirectory": "./dist/apk",
+    "clean": true
+  }
+}
