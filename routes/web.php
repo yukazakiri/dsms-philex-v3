@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\ApkController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Auth;
@@ -17,10 +18,68 @@ Route::get('/mobile', function () {
     return response()->file(public_path('mobile/index.html'));
 })->name('mobile');
 
-// PWA Downloads Page
-Route::get('/downloads', function () {
+// PWA Downloads Page with APK download support
+Route::get('/downloads', function (Request $request) {
+    // Check if APK download is requested
+    if ($request->has('apk') || $request->has('download')) {
+        $apkPath = storage_path('app/public/apk/dsms-philex.apk');
+
+        if (!file_exists($apkPath)) {
+            abort(404, 'APK file not found');
+        }
+
+        $fileName = 'dsms-philex-v' . config('app.apk_version', '1.0.0') . '.apk';
+
+        return response()->download($apkPath, $fileName, [
+            'Content-Type' => 'application/vnd.android.package-archive',
+            'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+            'Content-Length' => filesize($apkPath),
+            'Cache-Control' => 'no-cache, no-store, must-revalidate',
+            'Pragma' => 'no-cache',
+            'Expires' => '0'
+        ]);
+    }
+
+    // Default: serve the downloads page
     return response()->file(public_path('downloads/index.html'));
 })->name('downloads');
+
+// Direct APK Download Route
+Route::get('/download-apk', function () {
+    $apkPath = storage_path('app/public/apk/dsms-philex.apk');
+
+    if (!file_exists($apkPath)) {
+        abort(404, 'APK file not found');
+    }
+
+    $fileName = 'dsms-philex-v' . config('app.apk_version', '1.0.0') . '.apk';
+
+    return response()->download($apkPath, $fileName, [
+        'Content-Type' => 'application/vnd.android.package-archive',
+        'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+        'Content-Length' => filesize($apkPath),
+        'Cache-Control' => 'no-cache, no-store, must-revalidate',
+        'Pragma' => 'no-cache',
+        'Expires' => '0'
+    ]);
+})->name('download.apk');
+
+// APK Management Routes
+Route::get('/apk/test', function () {
+    return response()->json(['status' => 'APK routes working', 'timestamp' => now()]);
+});
+
+Route::prefix('apk')->name('apk.')->group(function () {
+    Route::get('/info', [ApkController::class, 'getApkInfo'])->name('info');
+    Route::get('/download', [ApkController::class, 'downloadApk'])->name('download');
+    Route::get('/check-update', [ApkController::class, 'checkUpdate'])->name('check-update');
+    Route::get('/download-page', [ApkController::class, 'downloadPage'])->name('download-page');
+
+    // Admin only routes
+    Route::middleware(['auth', 'admin'])->group(function () {
+        Route::post('/upload', [ApkController::class, 'uploadApk'])->name('upload');
+    });
+});
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
