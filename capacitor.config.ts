@@ -3,9 +3,11 @@ import type { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'com.philex.dsms',
   appName: 'DSMS Philex',
-  webDir: 'public/mobile',
+  webDir: 'public',
   server: {
-    androidScheme: 'https'
+    url: 'https://philexscholar.koamishin.org/login',
+    androidScheme: 'https',
+    cleartext: true
   }
 };
 
